@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "employeeId": "E001",
+    "fullName": "Ang Yi Hui",
+    "email": "yihui@mail.com",
+    "phone": "012344",
+    "department": "IT",
+    "position": "Software Engineer",
+    "salary": 3000.0,
+    "leaveDays": 12,
+    "status": "APPROVED"
+  },
+  {
+    "employeeId": "E002",
+    "fullName": "Adlina",
+    "email": "ad@mail.com",
+    "phone": "014125",
+    "department": "Human Resource",
+    "position": "Director",
+    "salary": 3000.0,
+    "leaveDays": 12,
+    "status": "APPROVED"
+  },
+  {
+    "employeeId": "E003",
+    "fullName": "Reehan",
+    "email": "reehan@mail.com",
+    "phone": "014625",
+    "department": "Finance",
+    "position": "Analyst",
+    "salary": 3000.0,
+    "leaveDays": 12,
+    "status": "PENDING"
+  },
+  {
+    "employeeId": "E004",
+    "fullName": "Joel",
+    "email": "joel@mail.com",
+    "phone": "0154125",
+    "department": "Supply Chain",
+    "position": "Director",
+    "salary": 3000.0,
+    "leaveDays": 12,
+    "status": "PENDING"
+  }
+]

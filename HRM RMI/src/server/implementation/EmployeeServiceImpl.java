@@ -24,27 +24,28 @@ public class EmployeeServiceImpl extends UnicastRemoteObject implements Employee
             return false;
         }
 
-        if (isNullOrEmpty(employee.getEmployeeId())) {
+        if (isNullOrEmpty(employee.getEmployeeId()) || !employee.getEmployeeId().matches("E\\d{3}")) {
             return false;
         }
 
-        if (isNullOrEmpty(employee.getFullName())) {
+        if (isNullOrEmpty(employee.getFullName()) || !employee.getFullName().matches("[A-Za-z ]+")) {
             return false;
         }
 
-        if (isNullOrEmpty(employee.getEmail()) || !employee.getEmail().contains("@")) {
+        if (isNullOrEmpty(employee.getEmail()) ||
+                !employee.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             return false;
         }
 
-        if (isNullOrEmpty(employee.getPhone())) {
+        if (isNullOrEmpty(employee.getPhone()) || !employee.getPhone().matches("\\d+")) {
             return false;
         }
 
-        if (isNullOrEmpty(employee.getDepartment())) {
+        if (isNullOrEmpty(employee.getDepartment()) || !employee.getDepartment().matches("[A-Za-z ]+")) {
             return false;
         }
 
-        if (isNullOrEmpty(employee.getPosition())) {
+        if (isNullOrEmpty(employee.getPosition()) || !employee.getPosition().matches("[A-Za-z ]+")) {
             return false;
         }
 
@@ -52,7 +53,7 @@ public class EmployeeServiceImpl extends UnicastRemoteObject implements Employee
             return false;
         }
 
-        if (employee.getLeaveDays() < 0) {
+        if (employee.getLeaveDays() < 0 || employee.getLeaveDays() > 30) {
             return false;
         }
 
@@ -60,25 +61,60 @@ public class EmployeeServiceImpl extends UnicastRemoteObject implements Employee
     }
 
     @Override
-    public boolean registerEmployee(Employee employee) throws RemoteException {
+    public String registerEmployee(Employee employee) throws RemoteException {
         if (employee == null) {
-            return false;
+            return "Employee data cannot be empty.";
         }
 
-        if (!validateEmployeeDetail(employee)) {
-            return false;
+        if (isNullOrEmpty(employee.getEmployeeId()) || !employee.getEmployeeId().matches("E\\d{3}")) {
+            return "Invalid Employee ID format. Example: E001.";
+        }
+
+        if (isNullOrEmpty(employee.getFullName()) || !employee.getFullName().matches("[A-Za-z .'-]+")) {
+            return "Full name cannot contain numbers or invalid special characters.";
+        }
+
+        if (isNullOrEmpty(employee.getEmail()) ||
+                !employee.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            return "Invalid email format.";
+        }
+
+        if (isNullOrEmpty(employee.getPhone()) || !employee.getPhone().matches("\\d+")) {
+            return "Phone number must contain numbers only.";
+        }
+
+        if (isNullOrEmpty(employee.getDepartment()) || !employee.getDepartment().matches("[A-Za-z ]+")) {
+            return "Department cannot contain numbers or special characters.";
+        }
+
+        if (isNullOrEmpty(employee.getPosition()) || !employee.getPosition().matches("[A-Za-z ]+")) {
+            return "Position cannot contain numbers or special characters.";
+        }
+
+        if (employee.getSalary() <= 0) {
+            return "Salary must be greater than 0.";
+        }
+
+        if (employee.getLeaveDays() < 0 || employee.getLeaveDays() > 30) {
+            return "Leave days must be between 0 and 30.";
         }
 
         if (employeeRepository.findById(employee.getEmployeeId()) != null) {
-            return false;
+            return "Employee ID already exists.";
         }
 
         if (employeeRepository.findByEmail(employee.getEmail()) != null) {
-            return false;
+            return "Email already exists.";
         }
 
         employee.setStatus("PENDING");
-        return employeeRepository.addEmployee(employee);
+        boolean saved = employeeRepository.addEmployee(employee);
+
+        if (saved) {
+            return "Employee registered successfully. Current status: PENDING";
+        } else {
+            return "Failed to save employee record.";
+        }
     }
 
     @Override

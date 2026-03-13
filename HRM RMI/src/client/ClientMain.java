@@ -15,7 +15,7 @@ public class ClientMain {
 
     public static void main(String[] args) {
         try {
-            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+            Registry registry = LocateRegistry.getRegistry("localhost", 2099);
             employeeService = (EmployeeService) registry.lookup("EmployeeService");
 
             showHRMainMenu();
@@ -79,7 +79,7 @@ public class ClientMain {
                 }
 
                 if (!id.matches("E\\d{3}")) {
-                    System.out.println("Invalid Employee ID format.");
+                    System.out.println("Invalid Employee ID format. Example: E001");
                     System.out.println("Next available ID: " + suggestedId);
                     continue;
                 }
@@ -91,55 +91,90 @@ public class ClientMain {
             while (true) {
                 System.out.print("Full Name: ");
                 name = scanner.nextLine().trim();
+
                 if (name.isEmpty()) {
                     System.out.println("Full name cannot be empty.");
-                } else {
-                    break;
+                    continue;
                 }
+
+                if (!name.matches("[A-Za-z .'-]+")) {
+                    System.out.println("Full name cannot contain numbers or invalid special characters.");
+                    continue;
+                }
+
+                break;
             }
 
             String email;
             while (true) {
                 System.out.print("Email: ");
                 email = scanner.nextLine().trim();
-                if (email.isEmpty() || !email.contains("@")) {
-                    System.out.println("Invalid email format.");
-                } else {
-                    break;
+
+                if (email.isEmpty()) {
+                    System.out.println("Email cannot be empty.");
+                    continue;
                 }
+
+                if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                    System.out.println("Invalid email format.");
+                    continue;
+                }
+
+                break;
             }
 
             String phone;
             while (true) {
                 System.out.print("Phone: ");
                 phone = scanner.nextLine().trim();
+
                 if (phone.isEmpty()) {
                     System.out.println("Phone cannot be empty.");
-                } else {
-                    break;
+                    continue;
                 }
+
+                if (!phone.matches("\\d+")) {
+                    System.out.println("Phone number must contain numbers only.");
+                    continue;
+                }
+
+                break;
             }
 
             String department;
             while (true) {
                 System.out.print("Department: ");
                 department = scanner.nextLine().trim();
+
                 if (department.isEmpty()) {
                     System.out.println("Department cannot be empty.");
-                } else {
-                    break;
+                    continue;
                 }
+
+                if (!department.matches("[A-Za-z ]+")) {
+                    System.out.println("Department cannot contain numbers or special characters.");
+                    continue;
+                }
+
+                break;
             }
 
             String position;
             while (true) {
                 System.out.print("Position: ");
                 position = scanner.nextLine().trim();
+
                 if (position.isEmpty()) {
                     System.out.println("Position cannot be empty.");
-                } else {
-                    break;
+                    continue;
                 }
+
+                if (!position.matches("[A-Za-z ]+")) {
+                    System.out.println("Position cannot contain numbers or special characters.");
+                    continue;
+                }
+
+                break;
             }
 
             double salary;
@@ -147,13 +182,15 @@ public class ClientMain {
                 try {
                     System.out.print("Salary (RM): ");
                     salary = Double.parseDouble(scanner.nextLine().trim());
+
                     if (salary <= 0) {
                         System.out.println("Salary must be greater than 0.");
                         continue;
                     }
+
                     break;
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid salary. Please enter a numeric value.");
+                    System.out.println("Invalid salary. Please enter numbers only.");
                 }
             }
 
@@ -162,10 +199,17 @@ public class ClientMain {
                 try {
                     System.out.print("Leave Days: ");
                     leaveDays = Integer.parseInt(scanner.nextLine().trim());
+
                     if (leaveDays < 0) {
                         System.out.println("Leave days cannot be negative.");
                         continue;
                     }
+
+                    if (leaveDays > 30) {
+                        System.out.println("Leave days cannot be more than 30.");
+                        continue;
+                    }
+
                     break;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid leave days. Please enter a whole number.");
@@ -174,24 +218,14 @@ public class ClientMain {
 
             Employee employee = new Employee(id, name, email, phone, department, position, salary, leaveDays);
 
-            boolean result = employeeService.registerEmployee(employee);
-
-            if (result) {
-                System.out.println("Employee registered successfully.");
-                System.out.println("Current status: PENDING");
-            } else {
-                System.out.println("Registration failed.");
-                System.out.println("Possible reasons:");
-                System.out.println("- Duplicate employee ID");
-                System.out.println("- Duplicate email");
-                System.out.println("- Invalid employee details");
-            }
+            String message = employeeService.registerEmployee(employee);
+            System.out.println(message);
 
         } catch (Exception e) {
-            System.out.println("An error occurred while registering employee.");
-            e.printStackTrace();
+            System.out.println("An unexpected error occurred while registering employee.");
         }
     }
+
 
     private static void validateEmployee() {
         try {

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeRepository {
-    private static final String FILE_PATH = "data/employees.json";
+    private static final String FILE_PATH = "HRM RMI/data/employees.json";
     private final Gson gson;
 
     public EmployeeRepository() {

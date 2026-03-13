@@ -11,7 +11,7 @@ public class ServerMain {
     public static void main(String[] args) {
         try {
 
-            Registry registry = LocateRegistry.createRegistry(1099);
+            Registry registry = LocateRegistry.createRegistry(2099);
 
             EmployeeService employeeService = new EmployeeServiceImpl();
 

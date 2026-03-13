@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface EmployeeService extends Remote {
     boolean validateEmployeeDetail(Employee employee) throws RemoteException;
-    boolean registerEmployee(Employee employee) throws RemoteException;
+    String registerEmployee(Employee employee) throws RemoteException;
     String getNextEmployeeId() throws RemoteException;
     List<Employee> getPendingEmployees() throws RemoteException;
     boolean approveEmployee(String employeeId) throws RemoteException;
