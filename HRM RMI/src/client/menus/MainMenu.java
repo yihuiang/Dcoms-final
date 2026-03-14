@@ -26,8 +26,6 @@ public class MainMenu
                 case "1": doViewProfile();   break;
                 case "2": doUpdateProfile(); break;
                 //HR
-                case "3": if (authController.isHR())  doViewEmployees();
-                else printError("Unauthorized access!"); break;//placeholder example
                 //for others :DDD option
                 /*
                 put yo cases here for other options like view employees, manage employees, etc. depending on the role of the user (HR, Manager, Employee) and delete this comment/placeholder
@@ -52,7 +50,7 @@ public class MainMenu
             return;
         }
 
-        System.out.println("  Name   : " + user.getName());
+        System.out.println("  Employee ID : " + user.getEmployeeId());
         System.out.println("  Email  : " + user.getEmail());
         System.out.println("  Role   : " + user.getRole());
         System.out.println("  Access : " + (user.isHR() ? "HR" : "Employee"));
@@ -89,7 +87,7 @@ private void doUpdateProfile()
             User updated = authController.getCurrentUser();
             System.out.println();
             System.out.println("  ✔  Profile updated successfully!");
-            System.out.println("     Name  : " + updated.getName());
+            System.out.println("     Employee ID : " + updated.getEmployeeId());
             System.out.println("     Email : " + updated.getEmail());
             System.out.println("     Role  : " + updated.getRole());
 
@@ -106,7 +104,7 @@ private void doUpdateProfile()
     private boolean doLogout()
     {
         String name = authController.getCurrentUser() != null
-                ? authController.getCurrentUser().getName() : "User";
+                ? authController.getCurrentUser().getEmployeeId() : "User";
         String error = authController.logout();
         if (error == null) {
             System.out.println();

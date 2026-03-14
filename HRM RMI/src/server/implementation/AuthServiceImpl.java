@@ -1,12 +1,12 @@
 package server.implementation;
 import common.interfaces.AuthService;
 import common.models.User;
-import server.repository.PasswordUtility;
-import server.repository.UserRepository;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import server.repository.PasswordUtility;
+import server.repository.UserRepository;
 
 public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
 {
@@ -106,10 +106,10 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
             {
                 if(UserRepository.findByEmail(trimmed) != null)
                 {
-                    throw new RemoteException("Email '" + trimmed + "' is already in use by another account.");
-                    user.setEmail(trimmed);
-                    changed = true;
+                    throw new RemoteException("Email is already in use by another account.");
                 }
+                user.setEmail(trimmed); // what is wrong with you
+                changed = true;
             }
         }
 
@@ -188,7 +188,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
 
     //EMAIL BY SESSION
     @Override
-    public String getEmailBySession(String sessionID) throws RemoteException
+    public String getEmailBySessionID(String sessionID) throws RemoteException
     {
         User user = activeSessions.get(sessionID);
         return user != null ? user.getEmail() : null;

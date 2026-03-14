@@ -35,8 +35,7 @@ public class AuthController
         }
         catch (RemoteException e)
         {
-            e.printStackTrace();
-            return "Login failed: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -49,7 +48,7 @@ public class AuthController
         }
         try
         {
-            authService.logout(currentUSer.getSessionID());
+            authService.logout(currentUser.getSessionID());
             currentUser = null;
             return null;
         }
@@ -79,6 +78,7 @@ public class AuthController
         
     }
 
+    //UPDATE PROFILE
     public String updateProfile(String newName, String newEmail, String newPassword)
     {
         if (currentUser == null)
@@ -88,7 +88,7 @@ public class AuthController
         try
         {
             User updatedUser = authService.updateProfile(currentUser.getSessionID(), newName, newEmail, newPassword);
-            updated.setSessionID(currentUser.getSessionID()); // Preserve session ID
+            updatedUser.setSessionID(currentUser.getSessionID()); // Preserve session ID
             currentUser = updatedUser; // Update local state with new profile
             return null;
         }
