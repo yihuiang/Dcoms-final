@@ -1,9 +1,7 @@
 [
   {
     "applicationId": "LA-A1B2C3D4",
-    "employeeEmail": "john.doe@bhel.com",
-    "name": "John Doe",
-    "role": "Software Engineer",
+    "employeeId": "E001",
     "fromDate": "2026-03-20",
     "toDate": "2026-03-22",
     "amountOfDays": 3,
@@ -12,9 +10,7 @@
   },
   {
     "applicationId": "LA-E5F6G7H8",
-    "employeeEmail": "jane.smith@bhel.com",
-    "name": "Jane Smith",
-    "role": "HR Manager",
+    "employeeId": "E002",
     "fromDate": "2026-03-25",
     "toDate": "2026-03-28",
     "amountOfDays": 4,
@@ -23,9 +19,7 @@
   },
   {
     "applicationId": "LA-I9J0K1L2",
-    "employeeEmail": "bob.tan@bhel.com",
-    "name": "Bob Tan",
-    "role": "Accountant",
+    "employeeId": "E003",
     "fromDate": "2026-04-01",
     "toDate": "2026-04-01",
     "amountOfDays": 1,
