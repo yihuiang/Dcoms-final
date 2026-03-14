@@ -1,5 +1,7 @@
 package client.controllers;
 import common.interfaces.AuthService;
+import common.interfaces.EmployeeService;
+import common.models.Employee;
 import common.models.User;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -15,6 +17,7 @@ public class AuthController
     //state
     private AuthService authService;
     private User currentUser;
+    private EmployeeService employeeService;
 
     //connection
     public void connect() throws Exception
@@ -22,6 +25,26 @@ public class AuthController
         Registry registry = LocateRegistry.getRegistry(HOST, PORT);
         authService = (AuthService) registry.lookup(SERVICE_NAME);
         System.out.println("Connected to AuthService");
+    }
+
+    //called by main menu to set employee service for profile in main menu
+    public void setEmployeeService(EmployeeService employeeService)
+    {
+        this.employeeService = employeeService;
+    }
+    public String getFullName (String employeeId)
+    {
+        if (employeeService == null || employeeId == null) return null;
+        try
+        {
+            Employee emp = employeeService.viewEmployeeRecord(employeeId);
+            return emp != null ? emp.getFullName() : null;
+        }
+        catch (RemoteException e)
+        {
+            System.err.println("Failed to get full name: " + e.getMessage());
+            return null;
+        }
     }
 
     //LOGIN
@@ -68,7 +91,7 @@ public class AuthController
         }
         try
         {
-            return authService.getProfile(currentUser.getSessionID());
+            return authService.getProfile(currentUser.getSessionID()) ;
         }
         catch (RemoteException e)
         {
@@ -79,7 +102,7 @@ public class AuthController
     }
 
     //UPDATE PROFILE
-    public String updateProfile(String newName, String newEmail, String newPassword)
+    public String updateProfile(String newEmail, String newPassword)
     {
         if (currentUser == null)
         {
@@ -87,7 +110,7 @@ public class AuthController
         }
         try
         {
-            User updatedUser = authService.updateProfile(currentUser.getSessionID(), newName, newEmail, newPassword);
+            User updatedUser = authService.updateProfile(currentUser.getSessionID(), newEmail, newPassword);
             updatedUser.setSessionID(currentUser.getSessionID()); // Preserve session ID
             currentUser = updatedUser; // Update local state with new profile
             return null;

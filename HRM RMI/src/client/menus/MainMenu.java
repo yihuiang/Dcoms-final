@@ -49,8 +49,10 @@ public class MainMenu
             printError("Could not retrieve profile. Please try again.");
             return;
         }
+        String fullName = authController.getFullName(user.getEmployeeId());
 
         System.out.println("  Employee ID : " + user.getEmployeeId());
+        System.out.println("  Full Name   : " + (fullName.isEmpty() ? "(Name not set)" : fullName));
         System.out.println("  Email  : " + user.getEmail());
         System.out.println("  Role   : " + user.getRole());
         System.out.println("  Access : " + (user.isHR() ? "HR" : "Employee"));
@@ -66,9 +68,6 @@ private void doUpdateProfile()
         System.out.println("  (Press ENTER to keep the current value)");
         System.out.println();
 
-        System.out.print("  New Name     : ");
-        String newName = scanner.nextLine().trim();
-
         System.out.print("  New Email    : ");
         String newEmail = scanner.nextLine().trim();
 
@@ -77,7 +76,6 @@ private void doUpdateProfile()
 
         // Pass null for blank fields — controller/server will ignore them
         String error = authController.updateProfile(
-                newName.isEmpty()     ? null : newName,
                 newEmail.isEmpty()    ? null : newEmail,
                 newPassword.isEmpty() ? null : newPassword
         );
@@ -85,9 +83,11 @@ private void doUpdateProfile()
         if (error == null)
         {
             User updated = authController.getCurrentUser();
+            String fullName = authController.getFullName(updated.getEmployeeId());
             System.out.println();
             System.out.println("  ✔  Profile updated successfully!");
             System.out.println("     Employee ID : " + updated.getEmployeeId());
+            System.out.println("     Full Name   : " + (fullName.isEmpty() ? "(Name not set)" : fullName));
             System.out.println("     Email : " + updated.getEmail());
             System.out.println("     Role  : " + updated.getRole());
 
@@ -105,10 +105,12 @@ private void doUpdateProfile()
     {
         String name = authController.getCurrentUser() != null
                 ? authController.getCurrentUser().getEmployeeId() : "User";
+        String fullName = authController.getFullName(name);
+        String displayName = fullName.isEmpty() ? "[" + name + "]" : fullName;
         String error = authController.logout();
         if (error == null) {
             System.out.println();
-            System.out.println("  ✔  Logged out. Goodbye, " + name + "!");
+            System.out.println("  ✔  Logged out. Goodbye, " + displayName + "!");
             System.out.println();
             pause();
             return true;

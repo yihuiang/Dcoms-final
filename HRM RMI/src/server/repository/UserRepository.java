@@ -22,9 +22,9 @@ public class UserRepository
             {
                 JSONArray seed = new JSONArray();
                 //seed for HR user
-                seed.put(buildJson("Barnacle", "Barnacle@mail.com", PasswordUtility.hash("hrrocks123"), "HR"));
+                seed.put(buildJson("E0100", "Barnacle@mail.com", PasswordUtility.hash("hrrocks123"), "HR"));
                 //seed for Employee user
-                seed.put(buildJson("Mermaid", "Mermaid@mail.com", PasswordUtility.hash("emprocks123"), "Employee"));
+                seed.put(buildJson("E0101", "Mermaid@mail.com", PasswordUtility.hash("emprocks123"), "Employee"));
                 writeFile(p, seed.toString(2));
                 System.out.println("User data file '" + FILE_PATH + "' created with seed data.");
             }
@@ -62,6 +62,21 @@ public class UserRepository
             }
         }
         return null;
+    }
+
+    //find employee ID
+    public static synchronized User findByEmployeeId (String employeeId)
+    {
+        if (employeeId == null) return null;
+        JSONArray arr = readArray();
+        for (int i = 0; i < arr.length(); i++)
+        {
+            JSONObject obj = arr.getJSONObject(i);
+            if (employeeId.equalsIgnoreCase(obj.optString("name"))) //using "name" field to store employee ID for simplicity
+            {
+                return fromJson(obj);
+            }
+        }
     }
 
     //write new
@@ -130,13 +145,13 @@ public class UserRepository
 
     private static JSONObject toJson (User u)
     {
-        return buildJson(u.getName(), u.getEmail(), u.getPassword(), u.getRole());
+        return buildJson(u.getEmployeeId(), u.getEmail(), u.getPassword(), u.getRole());
     }
 
-    private static JSONObject buildJson(String name, String email, String password, String role)
+    private static JSONObject buildJson(String employeeId, String email, String password, String role)
     {
         JSONObject obj = new JSONObject();
-        obj.put("name", name);
+        obj.put("employeeId", employeeId);
         obj.put("email", email);
         obj.put("password", password);
         obj.put("role", role);
@@ -146,7 +161,7 @@ public class UserRepository
     private static User fromJson (JSONObject obj)
     {
         User u = new User();
-        u.setName(obj.optString("name"));
+        u.setEmployeeId(obj.optString("employeeId"));
         u.setEmail(obj.optString("email"));
         u.setPassword(obj.optString("password"));
         u.setRole(obj.optString("role"));
