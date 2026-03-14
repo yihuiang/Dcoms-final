@@ -47,7 +47,7 @@ public class LoginMenu
         if (error == null)
         {
             System.out.println();
-            System.out.println("  ✔  Welcome, " + authController.getCurrentUser().getName() + "!");
+            System.out.println("  ✔  Welcome, " + authController.getCurrentUser().getEmployeeId() + "!");
             System.out.println("     Role   : " + authController.getCurrentUser().getRole());
             System.out.println("     Access : " + (authController.isHR() ? "HR" : "Employee"));
             System.out.println();
@@ -70,6 +70,14 @@ public class LoginMenu
         System.out.println(" 0. Exit");
         System.out.print(" Enter choice: ");
     }
+    private void printError(String error)
+    {
+        System.out.println();
+        System.out.println("  ✘  " + error);
+        System.out.println();
+        pause();
+    }
+    
     //pause
     private void pause()
     {

@@ -16,7 +16,7 @@ public class UserRepository
     {
         try
         {
-            Fils.createDirectories(Paths.get(DATA_DIR));
+            Files.createDirectories(Paths.get(DATA_DIR));
             Path p = Paths.get(FILE_PATH);
             if(!Files.exists(p))
             {

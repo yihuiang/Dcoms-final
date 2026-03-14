@@ -4,7 +4,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class PasswordUtility
 {
-    private PaswordUtility() {}
+    private PasswordUtility() {}
     public static String hash(String plainTxt)
     {
         try

@@ -6,12 +6,15 @@ import java.io.Serializable;
 public class User implements Serializable
 {
     private static final long serialVersionUID = 1L; //uid serialization
+
+    //Identifier ID
+    private String employeeId;
+
     //login credentials
-    private String username;
+    private String email;
     private String password; //for security, will be stored as SHA-256 hex hash
 
     //for profile
-    private String name;
     private String role; //HR or Employee
 
     //session ID
@@ -19,10 +22,10 @@ public class User implements Serializable
 
     //CONSTRUCTOR
     public User(){}
-    public USer(String name, String email, String password, String role)
+    public User(String employeeId, String email, String password, String role)
     {
-        this.name = name;
-        this.username = email;
+        this.employeeId = employeeId;
+        this.email = email;
         this.password = password;
         this.role = role;
     }
@@ -31,17 +34,19 @@ public class User implements Serializable
     /* only returns true if user has HR role access*/
     public boolean isHR()
     {
-        return role != null && role.toUpperCase().contains("HR");
+        if (role == null) return false;
+        String upper = role.toUpperCase();
+        return upper.contains("HR") || upper.contains("HUMAN RESOURCE");
     }
 
     //GETTERS AND SETTERS
-    public String getName()
+    public String getEmployeeId()
     {
-        return name;
+        return employeeId;
     }
-    public void setName (String name)
+    public void setEmployeeId(String employeeId)
     {
-        this.name = name;
+        this.employeeId = employeeId;
     }
 
     public String getEmail()
@@ -68,7 +73,7 @@ public class User implements Serializable
     }
     public void setRole(String role)
     {
-        this role = role;
+        this.role = role;
     }
 
     public String getSessionID()
@@ -84,8 +89,7 @@ public class User implements Serializable
     @Override
     public String toString()
     {
-        return "User
-        {name = '" + name + "' || email = '" + email + "' || role = '" + role + "' || isHR = '" + isHR() + "'}";
+        return "User{employeeId='" + employeeId + "', email='" + email + "', role='" + role + "', isHR=" + isHR() + "'}";
     }
     
 }
