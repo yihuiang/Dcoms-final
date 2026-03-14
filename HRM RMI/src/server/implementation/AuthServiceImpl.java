@@ -5,18 +5,20 @@ import server.repository.PasswordUtility;
 import server.repository.UserRepository;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java,util.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
 {
     private static final long serialVersionUID =  1L;
     private final Map<String, User> activeSessions = new ConcurrentHashMap<>();
 
-    public AuthServiceImpl() throws RemoteException 
+    public AuthServiceImpl() throws RemoteException
     {
         super();
     }
 
+    //LOGIN
     @Override
     public User login(String email, String password) throws RemoteException
     {
@@ -39,7 +41,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         }
         //session issue
         String sessionID = UUID.randomUUID().toString();
-        User.setSessionID(sessionID);
+        user.setSessionID(sessionID);
 
         //new copy in session map to mask password
         User sessionUser = copyUser(user);
@@ -57,7 +59,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
     public boolean logout(String sessionID) throws RemoteException
     {
         User removed = activeSessions.remove(sessionID);
-        if (removes != null)
+        if (removed != null)
         {
             System.out.println("User logged out, session removed: " + sessionID);
             return true;
@@ -94,15 +96,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         {
             throw new RemoteException("User account not found.");
         }
-
         boolean changed = false;
-
-        //name update
-        if(!isBlank(newName))
-        {
-            user.setName(newName.trim());
-            changed = true;
-        }
 
         //email update
         if(!isBlank(newEmail))
@@ -145,11 +139,11 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         //update session
         if(!user.getEmail().equals(originalEmail))
         {
-            activeSessions.remove(sessionId);
+            activeSessions.remove(sessionID);
             String newSessionID = UUID.randomUUID().toString();
             User refreshed = copyUser(user);
             refreshed.setPassword("[PROTECTED]");
-            refreshed.setSessionId(newSessionID);
+            refreshed.setSessionID(newSessionID);
             activeSessions.put(newSessionID, refreshed);
             user.setSessionID(newSessionID);
         }
@@ -157,7 +151,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         {
             User refreshed = copyUser(user);
             refreshed.setPassword("[PROTECTED]");
-            refreshed.setSessionId(sessionID);
+            refreshed.setSessionID(sessionID);
             activeSessions.put(sessionID, refreshed);
             user.setSessionID(sessionID);
         }
@@ -169,7 +163,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
 
     //FOR HR ACCESS
     @Override
-    public User getUserByEmail(String sessionID, string targetEmail) throws RemoteException
+    public User getUserByEmail(String sessionID, String targetEmail) throws RemoteException
     {
         User session = requireSession(sessionID);
         if(!session.isHR())
@@ -181,6 +175,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         {
             throw new RemoteException("No user found with email: " + targetEmail);
         }
+        target.setPassword("[PROTECTED]");
         return target;
     }
 
@@ -226,7 +221,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
     private User copyUser(User src)
     {
         User copy = new User();
-        copy.setName(src.getName());
+        copy.setEmployeeId(src.getEmployeeId());
         copy.setEmail(src.getEmail());
         copy.setPassword(src.getPassword());
         copy.setRole(src.getRole());
