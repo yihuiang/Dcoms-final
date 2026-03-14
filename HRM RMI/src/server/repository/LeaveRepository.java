@@ -28,15 +28,13 @@ public class LeaveRepository {
 
             JSONArray arr = (JSONArray) parsed;
             for (Object obj : arr) {
-                JSONObject jo = (JSONObject) obj;
-                list.add(fromJson(jo));
+                list.add(fromJson((JSONObject) obj));
             }
         } catch (Exception e) {
             System.err.println("[LeaveRepository] Error loading: " + e.getMessage());
         }
         return list;
     }
-
 
     @SuppressWarnings("unchecked")
     public void saveAll(List<LeaveApplication> applications) {
@@ -53,7 +51,6 @@ public class LeaveRepository {
 
     public void add(LeaveApplication la) {
         List<LeaveApplication> all = loadAll();
-        // generate unique ID if not set
         if (la.getApplicationId() == null || la.getApplicationId().isEmpty()) {
             la.setApplicationId("LA-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
@@ -80,14 +77,13 @@ public class LeaveRepository {
         return null;
     }
 
-    public List<LeaveApplication> findByEmail(String email) {
+    public List<LeaveApplication> findByEmployeeId(String employeeId) {
         List<LeaveApplication> result = new ArrayList<>();
         for (LeaveApplication la : loadAll()) {
-            if (la.getEmployeeEmail().equalsIgnoreCase(email)) result.add(la);
+            if (la.getEmployeeId().equalsIgnoreCase(employeeId)) result.add(la);
         }
         return result;
     }
-
 
     public List<LeaveApplication> findByStatus(String status) {
         List<LeaveApplication> result = new ArrayList<>();
@@ -97,14 +93,11 @@ public class LeaveRepository {
         return result;
     }
 
-
     @SuppressWarnings("unchecked")
     private JSONObject toJson(LeaveApplication la) {
         JSONObject jo = new JSONObject();
         jo.put("applicationId", la.getApplicationId());
-        jo.put("employeeEmail", la.getEmployeeEmail());
-        jo.put("name",          la.getName());
-        jo.put("role",          la.getRole());
+        jo.put("employeeId",    la.getEmployeeId());
         jo.put("fromDate",      la.getFromDate().toString());
         jo.put("toDate",        la.getToDate().toString());
         jo.put("amountOfDays",  (long) la.getAmountOfDays());
@@ -116,9 +109,7 @@ public class LeaveRepository {
     private LeaveApplication fromJson(JSONObject jo) {
         LeaveApplication la = new LeaveApplication();
         la.setApplicationId((String) jo.get("applicationId"));
-        la.setEmployeeEmail((String) jo.get("employeeEmail"));
-        la.setName(         (String) jo.get("name"));
-        la.setRole(         (String) jo.get("role"));
+        la.setEmployeeId(   (String) jo.get("employeeId"));
         la.setFromDate(LocalDate.parse((String) jo.get("fromDate")));
         la.setToDate(  LocalDate.parse((String) jo.get("toDate")));
         la.setAmountOfDays(((Long) jo.get("amountOfDays")).intValue());

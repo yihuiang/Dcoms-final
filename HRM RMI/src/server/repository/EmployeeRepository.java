@@ -114,4 +114,10 @@ public class EmployeeRepository {
         }
         return false;
     }
+
+    public int getTotalLeaveBalance(String employeeId) {
+        Employee employee = findById(employeeId);
+        return (employee != null) ? employee.getLeaveDays() : 14; // default 14 days
+    }
+
 }

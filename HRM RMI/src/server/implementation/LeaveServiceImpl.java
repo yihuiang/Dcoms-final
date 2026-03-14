@@ -1,6 +1,7 @@
 package server.implementation;
 
 import common.interfaces.LeaveService;
+import common.models.Employee;
 import common.models.LeaveApplication;
 import server.repository.EmployeeRepository;
 import server.repository.LeaveRepository;
@@ -10,9 +11,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveService {
+public abstract class LeaveServiceImpl extends UnicastRemoteObject implements LeaveService {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,24 +26,24 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
         this.employeeRepo = employeeRepo;
     }
 
-    @Override
-    public LeaveApplication applyForLeave(String employeeEmail, String name, String role,
-                                          LocalDate fromDate, LocalDate toDate)
+    public LeaveApplication applyForLeave(String employeeId, LocalDate fromDate, LocalDate toDate)
             throws RemoteException {
 
+        // FIXED: uses findById() from EmployeeRepository
+        if (employeeRepo.findById(employeeId) == null) {
+            throw new RemoteException("Employee not found: " + employeeId);
+        }
         if (fromDate.isAfter(toDate)) {
             throw new RemoteException("Invalid dates: 'from' date must be before or equal to 'to' date.");
         }
 
         String id = "LA-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        LeaveApplication la = new LeaveApplication(id, employeeEmail, name, role, fromDate, toDate);
-        return la; // not yet persisted – caller must call submitLeaveApplication
+        return new LeaveApplication(id, employeeId, fromDate, toDate);
     }
 
     @Override
     public boolean submitLeaveApplication(LeaveApplication leaveApplication) throws RemoteException {
-        // Check if employee has enough balance
-        int balance = viewLeaveBalance(leaveApplication.getEmployeeEmail());
+        int balance = viewLeaveBalance(leaveApplication.getEmployeeId());
         if (leaveApplication.getAmountOfDays() > balance) {
             throw new RemoteException("Insufficient leave balance. Requested: "
                     + leaveApplication.getAmountOfDays() + " days, Available: " + balance + " days.");
@@ -53,40 +53,36 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     }
 
     @Override
-    public int viewLeaveBalance(String employeeEmail) throws RemoteException {
-        return 0;
-    }
+    public int viewLeaveBalance(String employeeId) throws RemoteException {
+        // FIXED: uses findById() from EmployeeRepository, reads leaveDays field
+        Employee employee = employeeRepo.findById(employeeId);
+        if (employee == null) {
+            throw new RemoteException("Employee not found: " + employeeId);
+        }
+        int totalBalance = employee.getLeaveDays();
 
-    // ── View Leave Balance ────────────────────────────────────────────────────
-
-    //@Override
-    /*public int viewLeaveBalance(String employeeEmail) throws RemoteException {
-        // Get total leave balance from employee record
-        int totalBalance = employeeRepo.getTotalLeaveBalance(employeeEmail);
-
-        // Subtract approved leave days
-        List<LeaveApplication> approved = leaveRepo.findByEmail(employeeEmail)
+        // Subtract already approved leave days
+        int usedDays = leaveRepo.findByEmployeeId(employeeId)
                 .stream()
                 .filter(la -> la.getStatus().equalsIgnoreCase("Approved"))
-                .collect(Collectors.toList());
+                .mapToInt(LeaveApplication::getAmountOfDays)
+                .sum();
 
-        int usedDays = approved.stream().mapToInt(LeaveApplication::getAmountOfDays).sum();
         return totalBalance - usedDays;
-    }*/
+    }
 
     @Override
-    public List<LeaveApplication> viewLeaveApplicationStatus(String employeeEmail)
+    public List<LeaveApplication> viewLeaveApplicationStatus(String employeeId)
             throws RemoteException {
-        return leaveRepo.findByEmail(employeeEmail);
+        return leaveRepo.findByEmployeeId(employeeId);
     }
 
     @Override
     public boolean approveLeaveApplication(String applicationId) throws RemoteException {
         LeaveApplication la = leaveRepo.findById(applicationId);
         if (la == null) throw new RemoteException("Application not found: " + applicationId);
-        if (!la.getStatus().equalsIgnoreCase("Pending")) {
+        if (!la.getStatus().equalsIgnoreCase("Pending"))
             throw new RemoteException("Application is not in Pending status.");
-        }
         la.setStatus("Approved");
         return leaveRepo.update(la);
     }
@@ -95,9 +91,8 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     public boolean rejectLeaveApplication(String applicationId) throws RemoteException {
         LeaveApplication la = leaveRepo.findById(applicationId);
         if (la == null) throw new RemoteException("Application not found: " + applicationId);
-        if (!la.getStatus().equalsIgnoreCase("Pending")) {
+        if (!la.getStatus().equalsIgnoreCase("Pending"))
             throw new RemoteException("Application is not in Pending status.");
-        }
         la.setStatus("Declined");
         return leaveRepo.update(la);
     }
@@ -113,8 +108,8 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     }
 
     @Override
-    public List<LeaveApplication> getLeaveApplicationsByEmployee(String employeeEmail)
+    public List<LeaveApplication> getLeaveApplicationsByEmployee(String employeeId)
             throws RemoteException {
-        return leaveRepo.findByEmail(employeeEmail);
+        return leaveRepo.findByEmployeeId(employeeId);
     }
 }
