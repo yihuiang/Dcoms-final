@@ -8,11 +8,15 @@ import java.rmi.registry.Registry;
 import server.implementation.AuthServiceImpl;
 import server.implementation.EmployeeServiceImpl;
 import server.implementation.ReportServiceImpl;
+import server.repository.UserRepository;
 
 public class ServerMain {
 
     public static void main(String[] args) {
         try {
+
+            //add hardcoded user first time server starts
+            UserRepository.init();
 
             Registry registry = LocateRegistry.createRegistry(2099);
 

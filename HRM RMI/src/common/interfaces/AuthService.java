@@ -13,4 +13,5 @@ public interface AuthService extends Remote
     boolean isSessionValid(String sessionID) throws RemoteException;
     String getEmailBySessionID(String sessionID) throws RemoteException;
     boolean isHR(String sessionID) throws RemoteException;
+    String registerUser(String sessionID, String employeeId, String email, String role) throws RemoteException;
 }

@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import server.repository.PasswordUtility;
 import server.repository.UserRepository;
 
+
+
 public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
 {
     private static final long serialVersionUID =  1L;
@@ -202,6 +204,46 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
         return user != null && user.isHR();
     }
 
+    //HR REGISTER USER
+    @Override
+    public String registerUser(String sessionID, String employeeId, String email, String role) throws RemoteException
+    {
+        User session = requireSession(sessionID);
+        if(!session.isHR())
+        {
+            throw new RemoteException("Access denied. HR role required.");
+        }
+        if(isBlank(employeeId) || isBlank(email) || isBlank(role))
+        {
+            throw new RemoteException("Employee ID, email, and role cannot be blank.");
+        }
+        if(UserRepository.findByEmail(email.trim().toLowerCase()) != null)
+        {
+            throw new RemoteException("Email is already in use by another account.");
+        }
+        if(UserRepository.findByEmployeeId(employeeId.trim()) != null)
+        {
+            throw new RemoteException("Employee ID is already in use by another account.");
+        }
+
+        //generate plain password
+        String plainPass = generateRandomPassword();
+        User newUser = new User();
+        newUser.setEmployeeId(employeeId.trim());
+        newUser.setEmail(email.trim().toLowerCase());
+        newUser.setPassword(PasswordUtility.hash(plainPass));
+        newUser.setRole(role.trim());
+
+        boolean save = UserRepository.save(newUser);
+        if(!save)
+        {
+            throw new RemoteException("Failed to register new user. Please try again.");
+        }
+        System.out.println("New user registered by HR: " + newUser.getEmail() + " , Employee ID: " + newUser.getEmployeeId() + " , Role: " + newUser.getRole());
+        return plainPass; //show once
+        
+    }
+
     //HELPER METHODS
     private User requireSession(String sessionID) throws RemoteException
     {
@@ -230,5 +272,36 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService
     private static boolean isBlank(String str)
     {
         return str == null || str.trim().isEmpty();
+    }
+
+    private String generateRandomPassword()
+    {
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lower = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String special = "!@#$%^&*()_-+=<>?";
+        String all = upper + lower + digits + special;
+        Random rng = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        //at least 1 each type
+        sb.append(upper.charAt(rng.nextInt(upper.length())));
+        sb.append(lower.charAt(rng.nextInt(lower.length())));
+        sb.append(digits.charAt(rng.nextInt(digits.length())));
+        sb.append(special.charAt(rng.nextInt(special.length())));
+
+        for(int i = 0; i < 8; i++)
+        {
+            sb.append(all.charAt(rng.nextInt(all.length())));
+        }
+
+        //shuffle like shafla datura hahaha
+        List<Character> chars = new ArrayList<>();
+        for(char c: sb.toString().toCharArray()) chars.add(c);
+        Collections.shuffle(chars, rng);
+
+        StringBuilder result = new StringBuilder();
+        for(char c: chars) result.append(c);
+        return result.toString();
     }
 }

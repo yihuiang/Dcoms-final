@@ -136,6 +136,20 @@ public class AuthController
         
     }
 
+    public String registerUser(String employeeId, String email, String role)
+    {
+        if(currentUser == null)return "Not logged in.";
+        try
+        {
+            return authService.registerUser(currentUser.getSessionID(), employeeId, email, role);
+        
+        }
+        catch (RemoteException e)
+        {
+            return "Error: " + e.getMessage();
+        }
+    }
+
     //SESSION MENU HELPER
     public boolean isLoggedIn()
     {
