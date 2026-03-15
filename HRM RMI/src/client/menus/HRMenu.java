@@ -47,6 +47,7 @@ public class HRMenu
                 System.out.println("2. Leave Management");
                 System.out.println("3. Reports");
                 System.out.println("4. My Profile");
+                System.out.println("5. Create User Account");
                 System.out.println("0. Logout" );
                 System.out.print("\nSelect option: ");
 
@@ -62,6 +63,7 @@ public class HRMenu
                         boolean loggedOut = profileMenu.show();
                         if(loggedOut)return;
                     }
+                    case "5" -> createUserAccount();
                     case "0" -> {
                         authController.logout();
                         System.out.println("Logged out successfully.");
@@ -78,6 +80,108 @@ public class HRMenu
         }
     }
 
+    //create user account
+    private void createUserAccount()
+    {
+        try
+        {
+                    System.out.println("\n=== Create User Account ===");
+        System.out.println("  CREATE USER ACCOUNT  ");
+        System.out.println("=========================");
+        System.out.println("  Creates a login account and a pending employee record.  \n");
+
+        //auto gen employeeID
+        String employeeId = employeeService.getNextEmployeeId();
+        System.out.println("EmployeeID generated : " + employeeId);
+        //take email
+        String email;
+        while(true)
+        {
+            System.out.println("Enter email for the new account: ");
+            email = scanner.nextLine().trim();
+            if(email.isEmpty())
+            {
+                System.out.println("Email cannot be empty. Please try again.");
+                continue;
+            }
+            if(!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+            {
+                System.out.println("Invalid email format. Please try again.");
+                continue;
+            }
+            break;
+        }
+
+        //take role
+        String role;
+        while(true)
+        {
+            System.out.println("Role options: [1] HR, [2] Employee");
+            System.out.print("Select role: ");
+            role = scanner.nextLine().trim();
+            if(role.equals("1"))
+            {
+                role = "HR";
+                break;
+            }
+            else if(role.equals("2"))
+            {
+                role = "Employee";
+                break;
+            }
+            else
+            {
+                System.out.println("Invalid role. Please try again.");
+            }
+        }
+
+        //confirmation
+        System.out.println("\nPlease confirm the details:");
+        System.out.println("Employee ID: " + employeeId);
+        System.out.println("Email: " + email);
+        System.out.println("Role: " + role);
+        System.out.println("Password will be auto-generated");
+        System.out.println("Status: PENDING");
+        System.out.println("\n Confirm ? [Y/N]");
+        if(!scanner.nextLine().trim().equalsIgnoreCase("Y"))
+        {
+            System.out.println("User creation cancelled.");
+            return;
+        }
+
+        //register
+        String result = authController.registerUser(employeeId, email, role);
+        if(result.startsWith("Error: "))
+        {
+            System.out.println("\n [!] "+ result);
+            return;
+        }
+
+        //skeleton for after user creation to employee.json
+        Employee skeleton = new Employee();
+        skeleton.setEmployeeId(employeeId);
+        skeleton.setEmail(email);
+        skeleton.setStatus("PENDING");
+        employeeService.registerEmployee(skeleton);
+
+        //result
+        System.out.println("\nUser account created successfully.");
+        System.out.println("  ┌─────────────────────────────────────────────────┐");
+        System.out.printf ("  │  Employee ID : %s%n", employeeId);
+        System.out.printf ("  │  Email       : %s%n", email);
+        System.out.printf ("  │  Role        : %s%n", role);
+        System.out.printf ("  │  Password    : %-32s│%n", result + "  ←");
+        System.out.println("  └─────────────────────────────────────────────────┘");
+        System.out.println("  [i] Give the password above to the user.");
+        System.out.println("  [i] Complete the employee record via Employee Management.");
+        }
+        catch (Exception e)
+        {
+            System.out.println("An error occurred while creating user account");
+            e.printStackTrace();
+        }
+
+    }
 
     private void showHRMainMenu() {
     while (true) {
