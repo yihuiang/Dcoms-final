@@ -20,7 +20,7 @@ public class MainMenu
         {
             printHeader();
             String choice = scanner.nextLine().trim();
-            switch (choice)
+            switch (choice) //switch to rule switch after menu is done
             {
                 //profile
                 case "1": doViewProfile();   break;

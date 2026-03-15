@@ -6,6 +6,6 @@
     "java.project.referencedLibraries": [
         ".idea\\libraries\\gson-2.13.2.jar",
         ".idea\\libraries\\json-simple-1.1.jar",
-        "c:\\Users\\nikow\\OneDrive\\Documents\\APU\\Notes\\SEM 5\\Distributed Computer Systems\\Coding\\Dcoms-final.XstDEV\\.idea\\libraries\\json-20251224.jar"
+        ".idea\\libraries\\json-20251224.jar"
     ],
 }
