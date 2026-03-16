@@ -28,6 +28,7 @@ public class ReportMenu {
             System.out.println("  [1] Generate Employee Report");
             System.out.println("  [2] Generate Monthly Report");
             System.out.println("  [3] Generate Yearly Report");
+            System.out.println("  [4] View Saved Reports");
             System.out.println("  [0] Back");
             System.out.println("============================================================");
             System.out.print("Select option: ");
@@ -38,6 +39,7 @@ public class ReportMenu {
                 case "1": handleEmployeeReport(); break;
                 case "2": handleMonthlyReport();  break;
                 case "3": handleYearlyReport();   break;
+                case "4": handleViewSavedReports(); break;
                 case "0": running = false;         break;
                 default:
                     System.out.println("[!] Invalid option. Please try again.\n");
@@ -132,6 +134,53 @@ public class ReportMenu {
         System.out.println("\n" + report);
 
         promptExport(report, "yearly_report_" + year);
+    }
+
+    // ── View Saved Reports ────────────────────────────────────
+
+    private void handleViewSavedReports() {
+        System.out.println("\n--- View Saved Reports ---");
+
+        List<String> files = controller.listSavedReports();
+
+        if (files.isEmpty()) {
+            System.out.println("[!] No saved reports found in the reports/ folder.");
+            pressEnterToContinue();
+            return;
+        }
+
+        System.out.println();
+        System.out.printf("  %-6s %-40s%n", "No.", "Filename");
+        System.out.printf("  %-6s %-40s%n", "---", "-".repeat(38));
+
+        for (int i = 0; i < files.size(); i++) {
+            System.out.printf("  %-6d %-40s%n", i + 1, files.get(i));
+        }
+
+        System.out.println();
+        System.out.print("Enter number to view report (or 0 to cancel): ");
+        String input = scanner.nextLine().trim();
+
+        int selection;
+        try {
+            selection = Integer.parseInt(input);
+        } catch (NumberFormatException ex) {
+            System.out.println("[!] Invalid input.");
+            pressEnterToContinue();
+            return;
+        }
+
+        if (selection == 0) return;
+
+        if (selection < 1 || selection > files.size()) {
+            System.out.println("[!] Selection out of range.");
+            pressEnterToContinue();
+            return;
+        }
+
+        String content = controller.readSavedReport(files.get(selection - 1));
+        System.out.println("\n" + content);
+        pressEnterToContinue();
     }
 
     // ── Export Prompt ─────────────────────────────────────────

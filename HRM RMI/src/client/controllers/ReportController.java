@@ -3,7 +3,9 @@ package client.controllers;
 import common.interfaces.ReportService;
 import common.models.Employee;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
@@ -102,10 +104,59 @@ public class ReportController {
         }
     }
 
-    // ── File export ───────────────────────────────────────────
+    // ── File reading ──────────────────────────────────────────
 
     /**
-     * Saves the given report string to a local .txt file.
+     * Returns a list of .txt filenames found in the reports/ directory.
+     * Returns an empty list if the directory doesn't exist or is empty.
+     */
+    public List<String> listSavedReports() {
+        List<String> filenames = new ArrayList<>();
+        File reportsDir = new File("reports");
+
+        if (!reportsDir.exists() || !reportsDir.isDirectory()) {
+            return filenames;
+        }
+
+        File[] files = reportsDir.listFiles(
+                (dir, name) -> name.toLowerCase().endsWith(".txt"));
+
+        if (files != null) {
+            for (File f : files) {
+                filenames.add(f.getName());
+            }
+        }
+
+        return filenames;
+    }
+
+    /**
+     * Reads and returns the content of a saved report file.
+     *
+     * @param filename the name of the file inside the reports/ directory
+     * @return the file content as a String, or an error message
+     */
+    public String readSavedReport(String filename) {
+        File reportFile = new File("reports", filename);
+
+        if (!reportFile.exists()) {
+            return "Error: File '" + filename + "' not found.";
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(reportFile))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            return "Error reading file: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Saves the given report string to a local .txt file inside the reports/ folder.
      *
      * @param content  the report text to write
      * @param filename the target filename (should end with .txt)
@@ -113,10 +164,12 @@ public class ReportController {
      */
     public boolean exportReportToFile(String content, String filename) {
         File reportsDir = new File("reports");
-        if (!reportsDir.exists()){
+        if (!reportsDir.exists()) {
             reportsDir.mkdirs();
         }
+
         File outputFile = new File(reportsDir, filename);
+
         try (FileWriter writer = new FileWriter(outputFile)) {
             writer.write(content);
             return true;
