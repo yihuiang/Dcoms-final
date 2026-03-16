@@ -18,17 +18,17 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     private final LeaveRepository    leaveRepo;
     private final EmployeeRepository employeeRepo;
 
-    public LeaveServiceImpl()
-            throws RemoteException {
+    // FIXED: No-arg constructor — matches team's pattern, instantiates repos internally
+    public LeaveServiceImpl() throws RemoteException {
         super();
         this.leaveRepo    = new LeaveRepository();
         this.employeeRepo = new EmployeeRepository();
     }
 
+    @Override
     public LeaveApplication applyForLeave(String employeeId, LocalDate fromDate, LocalDate toDate)
             throws RemoteException {
 
-        // FIXED: uses findById() from EmployeeRepository
         if (employeeRepo.findById(employeeId) == null) {
             throw new RemoteException("Employee not found: " + employeeId);
         }
@@ -53,12 +53,15 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
 
     @Override
     public int viewLeaveBalance(String employeeId) throws RemoteException {
+        // Looks up leaveDays from employees.json — NOT restricted to APPROVED only
+        // because balance check must work for all registered employees
         Employee employee = employeeRepo.findById(employeeId);
         if (employee == null) {
             throw new RemoteException("Employee not found: " + employeeId);
         }
         int totalBalance = employee.getLeaveDays();
 
+        // Subtract approved leave days from leave_requests.json
         int usedDays = leaveRepo.findByEmployeeId(employeeId)
                 .stream()
                 .filter(la -> la.getStatus().equalsIgnoreCase("Approved"))
@@ -71,6 +74,7 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     @Override
     public List<LeaveApplication> viewLeaveApplicationStatus(String employeeId)
             throws RemoteException {
+        // Returns ALL applications for this employee from leave_requests.json
         return leaveRepo.findByEmployeeId(employeeId);
     }
 

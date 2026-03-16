@@ -12,14 +12,14 @@ import java.util.Scanner;
 
 public class LeaveMenu {
 
-    private static final String DIVIDER =
-            "============================================================";
-    private static final String SINGLE_LINE =
-            "------------------------------------------------------------";
+    private static final String DIVIDER     = "============================================================";
+    private static final String SINGLE_LINE = "------------------------------------------------------------";
 
     private final LeaveController    leaveController;
     private final Scanner            scanner;
-    private final EmployeeRepository employeeRepo; // ADDED: to look up name/position from employees.json
+    // Matches how HRMenu and ClientMain instantiate LeaveMenu:
+    // new LeaveMenu(leaveController, scanner, employeeRepo)
+    private final EmployeeRepository employeeRepo;
 
     public LeaveMenu(LeaveController leaveController, Scanner scanner, EmployeeRepository employeeRepo) {
         this.leaveController = leaveController;
@@ -31,7 +31,8 @@ public class LeaveMenu {
         boolean running = true;
         while (running) {
             printLeaveHeader();
-            if (isHR(currentUser)) {
+            // Uses User.isHR() which handles both "HR" and "HUMAN RESOURCE"
+            if (currentUser.isHR()) {
                 printHROptions();
             } else {
                 printEmployeeOptions();
@@ -40,7 +41,7 @@ public class LeaveMenu {
             System.out.print("  Enter choice: ");
             String choice = scanner.nextLine().trim();
 
-            if (isHR(currentUser)) {
+            if (currentUser.isHR()) {
                 running = HRChoice(choice, currentUser);
             } else {
                 running = EmployeeChoice(choice, currentUser);
@@ -48,7 +49,8 @@ public class LeaveMenu {
         }
     }
 
-    //Menu
+    // ── Menu Options ──────────────────────────────────────────────────────────
+
     private void printLeaveHeader() {
         System.out.println("\n" + DIVIDER);
         System.out.println("         LEAVE MANAGEMENT MODULE         ");
@@ -72,7 +74,8 @@ public class LeaveMenu {
         System.out.println(SINGLE_LINE);
     }
 
-    //Employee
+    // ── Employee ──────────────────────────────────────────────────────────────
+
     private boolean EmployeeChoice(String choice, User currentUser) {
         switch (choice) {
             case "1" -> applyForLeave(currentUser);
@@ -89,8 +92,9 @@ public class LeaveMenu {
         System.out.println("  APPLY FOR LEAVE");
         System.out.println(DIVIDER);
 
-        // CHANGED: look up employee from employees.json using email to get employeeId
-        Employee employee = employeeRepo.findByEmail(currentUser.getEmail());
+        // Look up employee by employeeId from User session
+        // Uses findById (not viewEmployeeRecord) so PENDING employees can also apply
+        Employee employee = employeeRepo.findById(currentUser.getEmployeeId());
         if (employee == null) {
             System.out.println("  [!] Employee record not found.");
             return;
@@ -104,7 +108,7 @@ public class LeaveMenu {
         }
 
         System.out.println(SINGLE_LINE);
-        // CHANGED: fullName and position from employees.json, not from User or LeaveApplication
+        // Name and position from employees.json
         System.out.println("  Applicant Name  : " + employee.getFullName());
         System.out.println("  Job Role        : " + employee.getPosition());
         System.out.println(SINGLE_LINE);
@@ -115,7 +119,6 @@ public class LeaveMenu {
 
         System.out.println(SINGLE_LINE);
         System.out.println("  ── Leave Application Preview ──");
-        // CHANGED: fullName and position from employees.json
         System.out.println("  Name        : " + employee.getFullName());
         System.out.println("  Role        : " + employee.getPosition());
         System.out.println("  From        : " + fromDate);
@@ -135,10 +138,10 @@ public class LeaveMenu {
                     fromDate,
                     toDate
             );
-            System.out.println("\nLeave application submitted successfully!");
+            System.out.println("\n  Leave application submitted successfully!");
             printApplicationCard(la);
         } catch (Exception e) {
-            System.out.println("\nSubmission failed: " + e.getMessage());
+            System.out.println("\n  Submission failed: " + e.getMessage());
         }
     }
 
@@ -147,7 +150,8 @@ public class LeaveMenu {
         System.out.println("  VIEW LEAVE BALANCE");
         System.out.println(DIVIDER);
 
-        Employee employee = employeeRepo.findByEmail(currentUser.getEmail());
+        // Name and position from employees.json via employeeId
+        Employee employee = employeeRepo.findById(currentUser.getEmployeeId());
         if (employee == null) {
             System.out.println("  [!] Employee record not found.");
             return;
@@ -170,17 +174,20 @@ public class LeaveMenu {
         System.out.println("  MY LEAVE APPLICATION STATUS");
         System.out.println(DIVIDER);
 
-        Employee employee = employeeRepo.findByEmail(currentUser.getEmail());
+        // Get employeeId from session, look up name from employees.json
+        Employee employee = employeeRepo.findById(currentUser.getEmployeeId());
         if (employee == null) {
             System.out.println("  [!] Employee record not found.");
             return;
         }
 
         try {
+            // Fetches from leave_requests.json by employeeId
             List<LeaveApplication> list = leaveController.getMyApplications(employee.getEmployeeId());
             if (list.isEmpty()) {
                 System.out.println("  No leave applications found.");
             } else {
+                System.out.printf("  Total Applications: %d%n%n", list.size());
                 for (LeaveApplication la : list) {
                     printApplicationCard(la);
                 }
@@ -190,7 +197,9 @@ public class LeaveMenu {
         }
         System.out.println(DIVIDER);
     }
-    //HR
+
+    // ── HR ────────────────────────────────────────────────────────────────────
+
     private boolean HRChoice(String choice, User currentUser) {
         switch (choice) {
             case "1" -> viewPendingApplications();
@@ -218,7 +227,7 @@ public class LeaveMenu {
                 }
             }
         } catch (RemoteException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("  [!] Error: " + e.getMessage());
         }
         System.out.println(DIVIDER);
     }
@@ -230,14 +239,14 @@ public class LeaveMenu {
         String appId = prompt("  Enter Application ID to approve: ");
         System.out.print("  Confirm approval of [" + appId + "]? (Y/N): ");
         if (!scanner.nextLine().trim().equalsIgnoreCase("Y")) {
-            System.out.println("Action cancelled.");
+            System.out.println("  [i] Action cancelled.");
             return;
         }
         try {
             boolean ok = leaveController.approve(appId);
             System.out.println(ok
-                    ? "Application [" + appId + "] has been APPROVED."
-                    : "Approval failed.");
+                    ? "  Application [" + appId + "] has been APPROVED."
+                    : "  Approval failed.");
         } catch (RemoteException e) {
             System.out.println("  [!] Error: " + e.getMessage());
         }
@@ -256,8 +265,8 @@ public class LeaveMenu {
         try {
             boolean ok = leaveController.reject(appId);
             System.out.println(ok
-                    ? " Application [" + appId + "] has been DECLINED."
-                    : " Rejection failed.");
+                    ? "  Application [" + appId + "] has been DECLINED."
+                    : "  Rejection failed.");
         } catch (RemoteException e) {
             System.out.println("  [!] Error: " + e.getMessage());
         }
@@ -283,8 +292,10 @@ public class LeaveMenu {
         System.out.println(DIVIDER);
     }
 
+    // ── Card Display ──────────────────────────────────────────────────────────
 
     private void printApplicationCard(LeaveApplication la) {
+        // Name and position from employees.json using employeeId stored in leave_requests.json
         Employee employee = employeeRepo.findById(la.getEmployeeId());
         String fullName = (employee != null) ? employee.getFullName() : "Unknown";
         String position = (employee != null) ? employee.getPosition() : "Unknown";
@@ -298,8 +309,7 @@ public class LeaveMenu {
         System.out.println(SINGLE_LINE);
         System.out.println("  Application ID   : " + la.getApplicationId());
         System.out.println("  Employee ID      : " + la.getEmployeeId());
-        // CHANGED: fullName and position fetched from employees.json, not from LeaveApplication
-        System.out.println("  Employee         : " + fullName);
+        System.out.println("  Employee Name    : " + fullName);
         System.out.println("  Job Role         : " + position);
         System.out.println("  Applied On       : " + la.getInitialDate());
         System.out.println("  Leave Period     : " + la.getFromDate() + "  to  " + la.getToDate());
@@ -311,10 +321,5 @@ public class LeaveMenu {
     private String prompt(String label) {
         System.out.print(label);
         return scanner.nextLine().trim();
-    }
-
-    private boolean isHR(User user) {
-        return user != null && user.getRole() != null
-                && user.getRole().toUpperCase().contains("HR");
     }
 }
