@@ -12,9 +12,15 @@
     "email": "Mermaid@mail.com"
   },
   {
-    "password": "f1ece36aa667c04f0bc6a1378bb8cf0c5902cd78d27db69ae68efd46cf0d647c",
+    "password": "a5e38f75360db967d2645900e791c246cd066f338ee2e8c4387b79a7a559a90a",
     "role": "Employee",
     "employeeId": "E005",
     "email": "leslieh@mail.com"
+  },
+  {
+    "password": "918161f30aed91a6ce162648bf6220d633ab7097b8e741ca7a1e65bc22478588",
+    "role": "HR",
+    "employeeId": "E006",
+    "email": "jolene@mail.com"
   }
 ]
