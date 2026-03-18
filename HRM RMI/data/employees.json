@@ -53,5 +53,16 @@
     "salary": 3500.0,
     "leaveDays": 7,
     "status": "APPROVED"
+  },
+  {
+    "employeeId": "E006",
+    "fullName": "Jolene Chan",
+    "email": "jolene@mail.com",
+    "phone": "01233",
+    "department": "Human Resource",
+    "position": "Staff",
+    "salary": 3500.0,
+    "leaveDays": 12,
+    "status": "APPROVED"
   }
 ]
